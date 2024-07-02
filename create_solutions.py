@@ -98,7 +98,11 @@ def make_all_possibilities(path: str | None = None):
                     continue
                 try:
                     r = eval(lside)
-                    if isinstance(r, int) and len(str(r)) + len(lside) == 7:
+                    if isinstance(r, float) and r==int(r):
+                        r = int(r)
+                    if not isinstance(r, int):
+                        continue
+                    if len(str(r)) + len(lside) == 7:
                         allposs.add(lside + "=" + str(r))
                 except:
                     continue
@@ -134,7 +138,7 @@ def solution2str(solution: list[str | tuple[int]]) -> str:
 
 if __name__ == "__main__":
     real_all_pos = make_all_possibilities(path="all_possibilites.json")
-    g = GuessingTree(possibilites=real_all_pos, guess="48-12=36")
+    g = GuessingTree(possibilites=real_all_pos, guess="48-36=12")
     fgt = flatten_guessing_tree(g)
     with open("solutions.txt", "+w") as f:
         for line in sorted(map(solution2str, fgt)):
