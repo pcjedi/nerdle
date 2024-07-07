@@ -18,13 +18,32 @@ class GuessingTree:
         if guess is not None:
             self.guess = guess
         else:
-            self.guess = get_next_guess(real_all_pos=possibilites, bar=False).pop()
+            next_guesses = get_next_guess(real_all_pos=possibilites, bar=False)
+            if len(next_guesses) == 1:
+                self.guess = next_guesses.pop()
+            else:
+                dd2 = defaultdict(set)
+                for guess in next_guesses:
+                    dd2[GuessingTree(guess=guess, possibilites=possibilites).depth].add(
+                        guess
+                    )
+                self.guess = dd2[min(dd2)].pop()
         if len(possibilites) > 1:
             answers = defaultdict(set)
             for p in possibilites:
                 answers[calc_code(secret=p, guess=self.guess)].add(p)
             answers.pop(tuple(2 for _ in self.guess))
             self.answers = {k: GuessingTree(possibilites=v) for k, v in answers.items()}
+        else:
+            self.answers = {}
+
+    @property
+    def depth(self) -> int:
+        return (
+            1
+            if len(self.answers) == 0
+            else 1 + max(gt.depth for gt in self.answers.values())
+        )
 
 
 def get_next_guess(
@@ -98,7 +117,7 @@ def make_all_possibilities(path: str | None = None):
                     continue
                 try:
                     r = eval(lside)
-                    if isinstance(r, float) and r==int(r):
+                    if isinstance(r, float) and r == int(r):
                         r = int(r)
                     if not isinstance(r, int):
                         continue
@@ -114,12 +133,12 @@ def make_all_possibilities(path: str | None = None):
 
 def flatten_guessing_tree(g: GuessingTree):
     rlist = []
-    try:
+    if len(g.answers) > 0:
         for t, g2 in g.answers.items():
             lala = [g.guess, t]
             for lblb in flatten_guessing_tree(g2):
                 rlist.append(lala + lblb)
-    except AttributeError:
+    else:
         rlist = [[g.guess]]
     return rlist
 
